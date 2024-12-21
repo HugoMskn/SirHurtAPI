@@ -24,7 +24,7 @@ namespace SirHurtAPI
         private static bool firstLaunch = true;
         private static Mutex rbxmutex = null;
         internal static string SHdatPath = "sirhurt.dat";
-        private readonly static string ver = "2"; //Ah shit i have to do this ; Yuh uh ! :3
+        private readonly static string ver = "2.1"; //Ah shit i have to do this ; Yuh uh ! :3
         private readonly static string DllName = "[SirHurtAPI]";
         internal static bool AlwaysGoodCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors policyErrors)
         {
@@ -42,12 +42,55 @@ namespace SirHurtAPI
         private static void CheckVersion()
         {
             WebClient wc = new WebClient();
-            if(wc.DownloadString("https://github.com/HugoMskn/SirHurtAPI") != ver)
+            if(wc.DownloadString("https://raw.githubusercontent.com/HugoMskn/SirHurtAPI/refs/heads/main/version.txt") != ver)
             {
                 MessageBox.Show("An API update was detected, you should update !","SirHurtAPI",MessageBoxButtons.OK,MessageBoxIcon.Information);
             }
         }
 
+
+        private static bool BoostrapSirHurt()
+        {
+            try
+            {
+                WebClient wc = new WebClient();
+                if(File.Exists("SirHurt.dll"))
+                {
+                    File.Delete("SirHurt.dll");
+                }
+                if (File.Exists("injector.exe"))
+                {
+                    File.Delete("injector.exe");
+                }
+                if (File.Exists("SirHurt V5.exe"))
+                {
+                    File.Delete("SirHurt V5.exe");
+                }
+                wc.DownloadFile("https://sirhurt.net/asshurt/update/v5/GUI.exe","SirHurt V5.exe");
+                wc.DownloadFile("https://sirhurt.net/asshurt/update/v5/sirhurt.exe","injector.exe");
+                string version = wc.DownloadString("https://sirhurt.net/asshurt/update/v5/fetch_version.php");
+                wc.Headers.Add(HttpRequestHeader.UserAgent, "Roblox/WinInet");
+                string hash = wc.DownloadString("https://sirhurt.net/asshurt/update/v5/fetch_sirhurt_version.php");
+                if (version == "Failed: A update has not yet been released for this ROBLOX build.")
+                {
+                    MessageBox.Show("An error occured while trying to update to the latest version of SirHurt V5. SirHurt has not yet released a new build for this ROBLOX version. Try again later!");
+                    Environment.Exit(0);
+                }
+                RegistryKey registryKey = Registry.CurrentUser.OpenSubKey("Software\\Asshurt", true);
+                if (registryKey != null)
+                {
+                    registryKey.SetValue("VHASH", CalculateMD5Hash(hash), RegistryValueKind.String);
+                }
+                wc.DownloadFile(version, "SirHurt.dll");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(DllName + "Failed to download SirHurt: " + ex.Message);
+                return false;
+            }
+
+        }
         private static string CalculateMD5Hash(string input)
         {
             HashAlgorithm hashAlgorithm = MD5.Create();
