@@ -101,12 +101,12 @@ namespace SirHurtAPI
         {
             bool returnval;
             bool injector = false;
-            if (!isInjected())
+            if (!IsInjected())
             {
                 IntPtr intPtr = FindWindowA("WINDOWSCLIENT", "Roblox");
                 if (intPtr == IntPtr.Zero)
                 {
-                    setInjectStatus(false);
+                    SetInjectStatus(false);
                     return false;
                 }
                 try
@@ -118,19 +118,19 @@ namespace SirHurtAPI
                 catch (Exception ex)
                 {
                     Console.WriteLine(DllName+"An error occured with injecting SirHurt: "+ ex.Message);
-                    setInjectStatus(false);
+                    SetInjectStatus(false);
                     return false;
                 }
                 if (injector)
                 {
                     Console.WriteLine(DllName + "Sucessfully injected SirHurt V5.");
-                    setInjectStatus(true);
+                    SetInjectStatus(true);
                     var a = Registry.CurrentUser.CreateSubKey("SirHurtAPI");
                     SHdatPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)}\\sirhurt\\sirhui\\sirhurt.dat";
                     a.SetValue("SHDatPath", SHdatPath);
                     returnval = true;
                     GetWindowThreadProcessId(intPtr, out _injectionResult);
-                    setInjectStatus(true);
+                    SetInjectStatus(true);
                     isCheckingDetachDone = false;
                     Task.Run(async () =>
                     {
@@ -141,7 +141,7 @@ namespace SirHurtAPI
                 else
                 {
                     Console.WriteLine(DllName + "Failed to inject SirHurt V5");
-                    setInjectStatus(false);
+                    SetInjectStatus(false);
                     return false;
                 }
             }
@@ -159,7 +159,7 @@ namespace SirHurtAPI
             catch (Exception ex)
             {
                 Console.WriteLine(DllName + "Cannot read auto inject status from registry, setting to false");
-                setAutoIJStatus(false);
+                SetAutoIJStatus(false);
                 Console.WriteLine(ex);
             }
             return autoInject;
@@ -169,17 +169,49 @@ namespace SirHurtAPI
             try
             {
                 var a = Registry.CurrentUser.OpenSubKey("SirHurtAPI");
-                autoInject = Convert.ToBoolean(a.GetValue("AutoEX"));
+                autoInject = Convert.ToBoolean(a.GetValue("autoExecuteStatus"));
             }
             catch (Exception ex)
             {
                 Console.WriteLine(DllName + "Cannot read auto inject status from registry, setting to false");
-                setAutoIJStatus(false);
+                SetAutoIJStatus(false);
                 Console.WriteLine(ex);
             }
             return autoInject;
         }
-        public static bool setInjectStatus(bool InjectStatus)
+        private static bool SetMRBX(bool mRBXStatus) // Multi client, althought you gotta provide your own mutex, from the DLL it dont work
+        {
+            try
+            {
+                var a = Registry.CurrentUser.CreateSubKey("SirHurtAPI");
+                a.SetValue("mRBX", mRBXStatus);
+                multipleRBX = mRBXStatus;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(DllName + "Cannot write mRBX status to registry");
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
+        public static bool GetMultipleRBX()
+        {
+            try
+            {
+                var a = Registry.CurrentUser.OpenSubKey("SirHurtAPI");
+                multipleRBX = Convert.ToBoolean(a.GetValue("mRBX"));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(DllName + "Cannot read auto inject status from registry, setting to false");
+                SetMRBX(false);
+                Console.WriteLine(ex);
+            }
+            return multipleRBX;
+        }
+
+        public static bool SetInjectStatus(bool InjectStatus)
         {
             try
             {
@@ -195,7 +227,7 @@ namespace SirHurtAPI
                 return false;
             }
         }
-        public static bool setAutoEXStatus(bool AutoEX)
+        public static bool SetAutoEXStatus(bool AutoEX)
         {
             try
             {
@@ -211,7 +243,7 @@ namespace SirHurtAPI
                 return false;
             }
         }
-        private static bool setAutoIJStatus(bool AutoInjectStatus)
+        private static bool SetAutoIJStatus(bool AutoInjectStatus)
         {
             try
             {
@@ -227,7 +259,7 @@ namespace SirHurtAPI
                 return false;
             }
         }
-        public static bool isInjected()
+        public static bool IsInjected()
         {
             try
             {
@@ -245,38 +277,37 @@ namespace SirHurtAPI
             catch (Exception ex)
             {
                 Console.WriteLine(DllName + "Cannot read inject status from registry, setting to false");
-                setInjectStatus(false);
+                SetInjectStatus(false);
                 Console.WriteLine(ex);
             }
             return Injected;
         }
-        public static bool AutoInjectToggle() //Why does everyone asking for this shit function ._. ; Who knows ?
+        public static bool AutoInjectToggle() //Why does everyone asking for this shit function ._.
         {
-            MessageBox.Show("Do not use this function if roblox take long to load or you are joining an empty server !", "WARNING",MessageBoxButtons.OK,MessageBoxIcon.Warning);
+            MessageBox.Show("Do not use this function if roblox take long to load or you are joining an empty server !", "WARNING", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             if (!GetAutoInject())
             {
-                setAutoIJStatus(true);
+                SetAutoIJStatus(true);
                 Task.Run(async () =>
                 {
-                    await autoIJ();
-                });;
+                    await AutoIJ();
+                }); ;
                 Console.WriteLine(DllName + "Enabled auto-inject");
             }
             else
             {
-                setAutoIJStatus(false);
+                SetAutoIJStatus(false);
                 Console.WriteLine(DllName + "Disabled auto-inject");
             }
             return GetAutoInject();
         }
-
-        private static async Task autoIJ()
+        private static async Task AutoIJ()
         {
             while (GetAutoInject())
             {
                 await Task.Delay(100);
                 IntPtr intPtr = FindWindowA("WINDOWSCLIENT", "Roblox");
-                if (isInjected() || intPtr == IntPtr.Zero)
+                if (IsInjected() || intPtr == IntPtr.Zero)
                 {
                     Console.WriteLine(DllName + "Injected or ROBLOX isn't running...");
                 }
@@ -297,6 +328,7 @@ namespace SirHurtAPI
                 }
             }
         }
+        
 
         private static async Task injectionCheckerThreadHandler()
         {
@@ -307,10 +339,10 @@ namespace SirHurtAPI
                 IntPtr intPtr = FindWindowA("WINDOWSCLIENT", "Roblox");
                 uint num = 0U;
                 GetWindowThreadProcessId(intPtr, out num);
-                if ((intPtr == IntPtr.Zero && isInjected()) || (_injectionResult != 0U && num != _injectionResult))
+                if ((intPtr == IntPtr.Zero && IsInjected()) || (_injectionResult != 0U && num != _injectionResult))
                 {
                     Execute("", true);
-                    setInjectStatus(false);
+                    SetInjectStatus(false);
                     
                     isCheckingDetachDone = true;
                 }
@@ -326,7 +358,7 @@ namespace SirHurtAPI
 
         public static bool Execute(string script, bool Forced) // nice
         {
-            if ((isInjected() || Forced) && !isCleaning)
+            if ((IsInjected() || Forced) && !isCleaning)
             {
                 try
                 {
@@ -381,40 +413,10 @@ namespace SirHurtAPI
                 return false;
             }
         }
-        private static bool setMRBX(bool mRBXStatus) // Multi client, althought you gotta provide your own mutex, from the DLL it dont work
-        {
-            try
-            {
-                var a = Registry.CurrentUser.CreateSubKey("SirHurtAPI");
-                a.SetValue("mRBX", mRBXStatus);
-                multipleRBX = mRBXStatus;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(DllName + "Cannot write mRBX status to registry");
-                Console.WriteLine(ex);
-                return false;
-            }
-        }
-        public static bool getMultipleRBX()
-        {
-            try
-            {
-                var a = Registry.CurrentUser.OpenSubKey("SirHurtAPI");
-                multipleRBX = Convert.ToBoolean(a.GetValue("mRBX"));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(DllName + "Cannot read auto inject status from registry, setting to false");
-                setMRBX(false);
-                Console.WriteLine(ex);
-            }
-            return multipleRBX;
-        }
+        
         private async static Task rbxTrack()
         {
-            while (getMultipleRBX())
+            while (GetMultipleRBX())
             {
                 Process[] pname = Process.GetProcessesByName("RobloxPlayerBeta");
                 if (pname.Length == 0)
@@ -441,7 +443,7 @@ namespace SirHurtAPI
                 proc.Kill();
             }
             Console.WriteLine(DllName + "OK");
-            setInjectStatus(false);
+            SetInjectStatus(false);
 
         }
         public static bool ExecuteFromFile(bool Forced) // Unsure why this would be needed but hey you can use it if you want :shrug:
