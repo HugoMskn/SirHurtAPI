@@ -24,7 +24,7 @@ namespace SirHurtAPI
         private static bool firstLaunch = true;
         private static Mutex rbxmutex = null;
         internal static string SHdatPath = "sirhurt.dat";
-        private readonly static string ver = "2.1"; //Ah shit i have to do this ; Yuh uh ! :3
+        private readonly static string ver = "2.1.1"; //Ah shit i have to do this ; Yuh uh ! :3
         private readonly static string DllName = "[SirHurtAPI]";
         internal static bool AlwaysGoodCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors policyErrors)
         {
@@ -49,7 +49,7 @@ namespace SirHurtAPI
         }
 
 
-        private static bool BoostrapSirHurt()
+        public static bool BoostrapSirHurt()
         {
             try
             {
