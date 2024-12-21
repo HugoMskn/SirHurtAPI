@@ -111,7 +111,7 @@ namespace SirHurtAPI
                 }
                 try
                 {
-                    Process injectorProcess = Process.Start(Directory.GetCurrentDirectory() + "/sirhurt.exe"); // Crank this shit manually since the old injection method ded
+                    Process injectorProcess = Process.Start(Directory.GetCurrentDirectory() + "/injector.exe"); // Crank this shit manually since the old injection method ded
                     injector = injectorProcess != null && !injectorProcess.HasExited;
                     returnval = true;
                 }
