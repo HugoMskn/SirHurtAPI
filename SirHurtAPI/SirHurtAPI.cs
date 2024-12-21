@@ -24,7 +24,6 @@ namespace SirHurtAPI
         private static bool firstLaunch = true;
         private static Mutex rbxmutex = null;
         internal static string SHdatPath = "sirhurt.dat";
-        private readonly static string ver = "2.1.1"; //Ah shit i have to do this ; Yuh uh ! :3
         private readonly static string DllName = "[SirHurtAPI]";
         internal static bool AlwaysGoodCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors policyErrors)
         {
@@ -39,14 +38,7 @@ namespace SirHurtAPI
         internal static uint _injectionResult;
         
 
-        private static void CheckVersion()
-        {
-            WebClient wc = new WebClient();
-            if(wc.DownloadString("https://raw.githubusercontent.com/HugoMskn/SirHurtAPI/refs/heads/main/version.txt") != ver)
-            {
-                MessageBox.Show("An API update was detected, you should update !","SirHurtAPI",MessageBoxButtons.OK,MessageBoxIcon.Information);
-            }
-        }
+        
 
 
         public static bool BoostrapSirHurt()
@@ -109,7 +101,6 @@ namespace SirHurtAPI
         {
             bool returnval;
             bool injector = false;
-            CheckVersion();
             if (!isInjected())
             {
                 IntPtr intPtr = FindWindowA("WINDOWSCLIENT", "Roblox");
